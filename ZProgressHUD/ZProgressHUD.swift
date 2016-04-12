@@ -35,12 +35,12 @@ public class ZProgressHUD: UIView {
     private var defaultStyle: ZProgressHUDStyle = .Dark
     private var defaultMaskType: ZProgressHUDMaskType = .Clear
     private var defaultPorgressType: ZProgressHUDProgressType = .General
-    private var defaultStatusType: ZProgressHUDStatusType = .Error
+    private var defaultStatusType: ZProgressHUDStatusType = .Indefinite
     private var minimumDismissDuration: NSTimeInterval = 3.0
-    private var fadeInAnimationDuration: NSTimeInterval = 0.25
+    private var fadeInAnimationDuration: NSTimeInterval = 1.0
     private var fadeOutAnimationDuration: NSTimeInterval = 0.25
     
-    private var status: String? = "保存成功"{
+    private var status: String? {
         didSet {
             self.statusLabel?.text = self.status
             self.placeSubviews()
@@ -86,11 +86,14 @@ public class ZProgressHUD: UIView {
                                                          name: UIDeviceOrientationDidChangeNotification,
                                                          object: nil)
         
-        self.prepare()
-        
         self.errorImage = Config.imageFor("error.png")
         self.successImage = Config.imageFor("success")
         self.infoImage = Config.imageFor("info")
+        
+        self.alpha = 0
+        self.overlayView?.alpha = 0
+        
+        self.prepare()
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -104,6 +107,10 @@ public class ZProgressHUD: UIView {
     // MARK: -
     private func prepare() {
         
+        if !self.isVisible() {
+            self.alpha = 0
+            self.overlayView?.alpha = 0
+        }
         /**
          *  set the overlayer view
          */
@@ -114,7 +121,6 @@ public class ZProgressHUD: UIView {
             self.overlayView?.addTarget(self,
                                        action: #selector(ZProgressHUD.overlayViewDidReceiveTouchEvent(_:event:)),
                                        forControlEvents: .TouchDown)
-            self.overlayView?.backgroundColor = UIColor.clearColor()
         }
         
         /**
@@ -128,8 +134,8 @@ public class ZProgressHUD: UIView {
                                               .FlexibleRightMargin,
                                               .FlexibleLeftMargin ]
             self.hudView?.layer.cornerRadius = self.cornerRadius
-            self.hudView?.backgroundColor = self.backgroundColor()
         }
+        self.hudView?.backgroundColor = self.backgroundColor()
         
         /**
          *  set the status label
@@ -211,15 +217,15 @@ public class ZProgressHUD: UIView {
         default: break
             
         }
-
-        self.addSubviews()
-        self.placeSubviews()
     }
     
     /**
      *  add the subviews
      */
     private func addSubviews() {
+        self.removeSubviews()
+        self.prepare()
+        
         if self.overlayView?.superview == nil {
             dispatch_async(dispatch_get_main_queue()) {
                 for window in UIApplication.sharedApplication().windows.reverse() {
@@ -266,6 +272,8 @@ public class ZProgressHUD: UIView {
             }
             break
         }
+        
+        self.placeSubviews()
     }
     
     /*
@@ -363,10 +371,73 @@ public class ZProgressHUD: UIView {
         CATransaction.setDisableActions(true)
         
         self.frame = UIScreen.mainScreen().bounds
+        self.bgLayer?.frame = self.frame
         self.overlayView?.frame = self.frame
         self.hudView?.center = self.center
         
         CATransaction.commit()
+    }
+    
+    private func show() {
+        self.show(nil)
+    }
+    
+    private func show(status: String?) {
+        self.status = status
+        self.defaultStatusType = .Indefinite
+        self.addSubviews()
+        
+        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+            self.alpha = 1.0
+            self.overlayView?.alpha = 1.0
+        })
+    }
+    
+    private func showImage(image: UIImage?, status: String? = nil, statusType: ZProgressHUDStatusType = .Custom) {
+        self.status = status
+        self.defaultStatusType = statusType
+        self.customImage = image
+        self.addSubviews()
+        
+        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+            self.alpha = 1.0
+            self.overlayView?.alpha = 1.0
+            }, completion: { (flag) in
+               self.setFadeOutTimter(self.minimumDismissDuration)
+        })
+    }
+    
+    private func dismiss(delay: NSTimeInterval = 0.0) {
+        if delay > 0 {
+            self.setFadeOutTimter(delay)
+            return
+        }
+        
+        UIView.animateWithDuration(self.fadeOutAnimationDuration, animations: {
+            self.alpha = 0.0
+            self.overlayView?.alpha = 0.0
+            }, completion: { (flag) in
+                self.fadeOutTimer?.invalidate()
+                self.fadeOutTimer = nil
+                self.removeSubviews()
+        })
+    }
+    
+    private func setFadeOutTimter (timeInterval: NSTimeInterval) {
+        if self.fadeOutTimer != nil {
+            self.fadeOutTimer?.invalidate()
+            self.fadeOutTimer = nil
+        }
+        
+        self.fadeOutTimer = NSTimer(timeInterval: timeInterval,
+                                    target: self,
+                                    selector: #selector(self.fadeOut(_:)),
+                                    userInfo: nil, repeats: true)
+        NSRunLoop.mainRunLoop().addTimer(self.fadeOutTimer!, forMode:NSRunLoopCommonModes)
+    }
+    
+    @objc private func fadeOut(timer: NSTimer) {
+        self.dismiss()
     }
 }
 
@@ -377,10 +448,10 @@ private extension ZProgressHUD {
         var backgroundColor: UIColor?
         switch self.defaultStyle {
         case .Ligtht:
-            backgroundColor = UIColor(white: 0.0, alpha: 0.8)
+            backgroundColor = UIColor(white: 1.0, alpha: 1.0)
             break
         case .Dark:
-            backgroundColor = UIColor.blackColor()
+            backgroundColor = UIColor(white: 0.0, alpha: 0.8)
             break
         case .Custom:
             backgroundColor = self.bgColor
@@ -429,7 +500,7 @@ private extension ZProgressHUD {
 
 // MARK:- Setters
 public extension ZProgressHUD {
-    
+    /*
     public class func setRingThickness(ringThickness: CGFloat) {
         
     }
@@ -440,74 +511,78 @@ public extension ZProgressHUD {
     
     public class func setRingNoTextRadius(radius: CGFloat) {
         
-    }
+    }*/
 
     public class func setMinmumSize(size: CGSize) {
         self.shareInstance().minmumSize = size
     }
     
     public class func setCornerRadius(radius: CGFloat) {
-        
+        self.shareInstance().cornerRadius = radius
     }
     
-    public class func setFont(font: UIFont?) {
-        
+    public class func setFont(font: UIFont) {
+        self.shareInstance().font = font
     }
     
     public class func setErrorImage(image: UIImage?) {
-        
+        self.shareInstance().errorImage = image
     }
     
     public class func setSuccessImage(image: UIImage?) {
-        
+        self.shareInstance().successImage = image
     }
     
     public class func setInfoImage(image: UIImage?) {
-        
+        self.shareInstance().infoImage = image
     }
     
     public class func setForegroundColor(color: UIColor?) {
-        
+        self.shareInstance().fgColor = color
     }
     
     public class func setBackgroundColor(color: UIColor?) {
-        
+        self.shareInstance().bgColor = color
     }
     
     public class func setBackgroundLayerColor(color: UIColor?) {
-        
+        self.shareInstance().bgLayerColor = color
     }
     
     public class func setStatus(status: String?) {
-        
+        self.shareInstance().status = status
     }
     
     public class func setCenterOffset(offset: UIOffset) {
-        
+        self.shareInstance().centerOffset = offset
+    }
+    
+    public class func resetCenterOffset() {
+        self.shareInstance().centerOffset = UIOffsetZero
     }
     
     public class func setDefaultStyle(style: ZProgressHUDStyle) {
-        
+        self.shareInstance().defaultStyle = style
     }
     
     public class func setDefaultMaskType(maskType: ZProgressHUDMaskType) {
-        
+        self.shareInstance().defaultMaskType = maskType
     }
-    
-    public class func setDefaultPorgressType(porgressType: ZProgressHUDProgressType) {
-        
-    }
+    /*
+    public class func setDefaultPorgressType(progressType: ZProgressHUDProgressType) {
+        self.shareInstance().defaultPorgressType = progressType
+    }*/
     
     public class func setMinimumDismissDuration(duration: NSTimeInterval) {
-        
+        self.shareInstance().minimumDismissDuration = duration
     }
     
     public class func setFadeInAnimationDuration(duration: NSTimeInterval) {
-        
+        self.shareInstance().fadeInAnimationDuration = duration
     }
     
     public class func setFadeOutAnimationDuration(duration: NSTimeInterval) {
-        
+        self.shareInstance().fadeOutAnimationDuration = duration
     }
 }
 
@@ -515,47 +590,42 @@ public extension ZProgressHUD {
 public extension ZProgressHUD {
     
     public class func show() {
-        self.shareInstance()
-  
+        self.shareInstance().show(nil)
     }
     
     public class func show(status: String?) {
-        
+        self.shareInstance().show(status)
     }
     
     public class func showImage(image: UIImage?, status: String? = nil) {
-        
+        self.shareInstance().showImage(image, status: status, statusType: .Custom)
     }
-    
+    /*
     public class func showProgress(progress: Double, status: String? = nil) {
         
-    }
+    }*/
     
     public class func showError(status: String) {
-        
+        self.shareInstance().showImage(nil, status: status, statusType: .Error)
+
     }
     
     public class func showInfo(status: String) {
-        
+        self.shareInstance().showImage(nil, status: status, statusType: .Info)
     }
     
     public class func showSuccess(status: String) {
-        
+        self.shareInstance().showImage(nil, status: status, statusType: .Success)
     }
     
     public class func dismiss(delay: NSTimeInterval = 0.0) {
-        
+        self.shareInstance().dismiss(delay)
     }
     
     public class func isVisible() -> Bool {
-        return false
-    }
-    
-    public class func resetCenterOffset() {
-        
+        return self.shareInstance().isVisible()
     }
 }
-
 
 // MARK: - UIImage Tint Color
 internal extension UIImage {

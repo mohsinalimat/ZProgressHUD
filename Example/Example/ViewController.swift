@@ -13,8 +13,6 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        ZProgressHUD.show()
-        // Do any additional setup after loading the view, typically from a nib.
     }
 
     override func didReceiveMemoryWarning() {
@@ -22,6 +20,30 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func show(sender: AnyObject) {
+        ZProgressHUD.show()
+    }
 
+    @IBAction func showStatus(sender: AnyObject) {
+        ZProgressHUD.setDefaultMaskType(.Gradient)
+        ZProgressHUD.show("正在加载")
+    }
+    @IBAction func showError(sender: AnyObject) {
+         ZProgressHUD.setDefaultMaskType(.Black)
+        ZProgressHUD.showError("保存失败")
+    }
+    @IBAction func showSuccess(sender: AnyObject) {
+        ZProgressHUD.setDefaultMaskType(.Clear)
+        ZProgressHUD.setDefaultStyle(.Dark)
+        ZProgressHUD.showSuccess("保存成功")
+    }
+    @IBAction func showInfo(sender: AnyObject) {
+        ZProgressHUD.setDefaultStyle(.Ligtht)
+        ZProgressHUD.setDefaultMaskType(.Gradient)
+        ZProgressHUD.showInfo("错误的名称")
+    }
+    @IBAction func showImage(sender: AnyObject) {
+        ZProgressHUD.showImage(UIImage(named: "show"))
+    }
 }
 
