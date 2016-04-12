@@ -57,7 +57,6 @@ class ZProgressAnimatedView: UIView {
         } else {
             self.layer.addSublayer(self.animatedLayer())
             self.frame = self.sharpLayer!.bounds
-            print(self.sharpLayer?.frame)
         }
     }
     

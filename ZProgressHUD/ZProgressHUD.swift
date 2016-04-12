@@ -33,7 +33,7 @@ public class ZProgressHUD: UIView {
     private var bgLayerColor: UIColor?
     
     private var defaultStyle: ZProgressHUDStyle = .Dark
-    private var defaultMaskType: ZProgressHUDMaskType = .Clear
+    private var defaultMaskType: ZProgressHUDMaskType = .None
     private var defaultPorgressType: ZProgressHUDProgressType = .General
     private var defaultStatusType: ZProgressHUDStatusType = .Indefinite
     private var minimumDismissDuration: NSTimeInterval = 3.0
@@ -121,6 +121,16 @@ public class ZProgressHUD: UIView {
             self.overlayView?.addTarget(self,
                                        action: #selector(ZProgressHUD.overlayViewDidReceiveTouchEvent(_:event:)),
                                        forControlEvents: .TouchDown)
+        }
+        
+        if self.defaultMaskType != .None {
+            self.overlayView?.userInteractionEnabled = true
+            self.accessibilityLabel = status
+            self.isAccessibilityElement = true
+        } else {
+            self.overlayView?.userInteractionEnabled = false
+            self.hudView?.accessibilityLabel = status
+            self.hudView?.isAccessibilityElement = true
         }
         
         /**
@@ -309,7 +319,6 @@ public class ZProgressHUD: UIView {
             let sizeWidth = labelSize.width + margin * 2
             // 图片最大高度为28.0
             let sizeHeight = max(self.minmumLabelHeight, labelSize.height) + margin * 2.75 + 28.0
-            print(sizeHeight)
             rect.size.width = max(minSize.width, sizeWidth)
             rect.size.height = max(minSize.height, sizeHeight)
         } else {
