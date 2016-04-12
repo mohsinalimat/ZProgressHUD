@@ -1,0 +1,4 @@
+platform :ios, '8.0'
+target 'Example' do
+    pod 'Reveal-iOS-SDK', :configurations => ['Debug']
+end
