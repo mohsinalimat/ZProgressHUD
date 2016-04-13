@@ -20,24 +20,34 @@ public class ZProgressHUD: UIView {
     private var pureLabelminmumSize = CGSizeMake(100, 28.0)
     private let maxmumLabelSize = CGSizeMake(160, 260)
     private let minmumLabelHeight: CGFloat = 20.0
-    private var font = UIFont.systemFontOfSize(14.0)
-    private var cornerRadius: CGFloat = 14.0
+    private var font = UIFont.systemFontOfSize(14.0) {
+        didSet { self.placeSubviews() }
+    }
+    private var cornerRadius: CGFloat = 14.0 {
+        didSet { self.hudView?.layer.cornerRadius = self.cornerRadius }
+    }
 
     private var errorImage: UIImage?
     private var successImage: UIImage?
     private var infoImage: UIImage?
     private var customImage: UIImage?
     
-    private var fgColor: UIColor?
-    private var bgColor: UIColor?
-    private var bgLayerColor: UIColor?
+    private var fgColor: UIColor? {
+        didSet { self.prepare() }
+    }
+    private var bgColor: UIColor? {
+        didSet { self.prepare() }
+    }
+    private var bgLayerColor: UIColor? {
+        didSet { self.prepare() }
+    }
     
     private var defaultStyle: ZProgressHUDStyle = .Dark
     private var defaultMaskType: ZProgressHUDMaskType = .None
     private var defaultPorgressType: ZProgressHUDProgressType = .General
     private var defaultStatusType: ZProgressHUDStatusType = .Indefinite
     private var minimumDismissDuration: NSTimeInterval = 3.0
-    private var fadeInAnimationDuration: NSTimeInterval = 1.0
+    private var fadeInAnimationDuration: NSTimeInterval = 0.25
     private var fadeOutAnimationDuration: NSTimeInterval = 0.25
     
     private var status: String? {
@@ -181,18 +191,19 @@ public class ZProgressHUD: UIView {
         case .Indefinite:
             if self.indefinteView != nil { break }
             self.indefinteView = ZIndefiniteAnimatedView(frame: CGRectZero)
-            self.indefinteView?.strokeColor = self.foregroundColor()
+            
             break
         case .Progress:
             if self.progressView != nil { break }
             self.progressView = ZProgressAnimatedView(frame: CGRectZero)
+            
             break
         }
     
-        if self.imageView != nil {
-            self.imageView?.image = self.statusImage()?.tintColor(self.foregroundColor())
-        }
-        
+        self.imageView?.image = self.statusImage()?.tintColor(self.foregroundColor())
+        self.indefinteView?.strokeColor = self.foregroundColor()
+        self.progressView?.fgColor = self.foregroundColor()
+        self.progressView?.bgColor = self.backgroundColor()
         /**
          *  set the background mask
          */
@@ -237,16 +248,14 @@ public class ZProgressHUD: UIView {
         self.prepare()
         
         if self.overlayView?.superview == nil {
-            dispatch_async(dispatch_get_main_queue()) {
-                for window in UIApplication.sharedApplication().windows.reverse() {
-                    let windowOnMainScreen = window.screen == UIScreen.mainScreen()
-                    let windowIsVisible = !window.hidden && window.alpha > 0;
-                    let windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
-                    
-                    if windowOnMainScreen && windowIsVisible && windowLevelNormal {
-                        window.addSubview(self.overlayView!)
-                        break
-                    }
+            for window in UIApplication.sharedApplication().windows.reverse() {
+                let windowOnMainScreen = window.screen == UIScreen.mainScreen()
+                let windowIsVisible = !window.hidden && window.alpha > 0;
+                let windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
+                
+                if windowOnMainScreen && windowIsVisible && windowLevelNormal {
+                    window.addSubview(self.overlayView!)
+                    break
                 }
             }
         } else {
@@ -394,26 +403,47 @@ public class ZProgressHUD: UIView {
     private func show(status: String?) {
         self.status = status
         self.defaultStatusType = .Indefinite
-        self.addSubviews()
-        
-        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
-            self.alpha = 1.0
-            self.overlayView?.alpha = 1.0
-        })
+        // 在主线程中刷新UI
+        dispatch_async(dispatch_get_main_queue()) {
+            self.addSubviews()
+            UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+                self.alpha = 1.0
+                self.overlayView?.alpha = 1.0
+            })
+        }
+    }
+    
+    private func showProgress() {
+        self.showProgress(nil)
+    }
+    
+    private func showProgress(status: String?) {
+        self.status = status
+        self.defaultStatusType = .Progress
+        // 在主线程中刷新UI
+        dispatch_async(dispatch_get_main_queue()) {
+            self.addSubviews()
+            UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+                self.alpha = 1.0
+                self.overlayView?.alpha = 1.0
+            })
+        }
     }
     
     private func showImage(image: UIImage?, status: String? = nil, statusType: ZProgressHUDStatusType = .Custom) {
         self.status = status
         self.defaultStatusType = statusType
         self.customImage = image
-        self.addSubviews()
-        
-        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
-            self.alpha = 1.0
-            self.overlayView?.alpha = 1.0
-            }, completion: { (flag) in
-               self.setFadeOutTimter(self.minimumDismissDuration)
-        })
+        // 在主线程中刷新UI
+        dispatch_async(dispatch_get_main_queue()) {
+            self.addSubviews()
+            UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+                self.alpha = 1.0
+                self.overlayView?.alpha = 1.0
+                }, completion: { (flag) in
+                   self.setFadeOutTimter(self.minimumDismissDuration)
+            })
+        }
     }
     
     private func dismiss(delay: NSTimeInterval = 0.0) {
@@ -598,21 +628,17 @@ public extension ZProgressHUD {
 // MARK: - show methods
 public extension ZProgressHUD {
     
-    public class func show() {
-        self.shareInstance().show(nil)
-    }
-    
-    public class func show(status: String?) {
+    public class func show(status: String? = nil) {
         self.shareInstance().show(status)
     }
     
     public class func showImage(image: UIImage?, status: String? = nil) {
         self.shareInstance().showImage(image, status: status, statusType: .Custom)
     }
-    /*
+    
     public class func showProgress(progress: Double, status: String? = nil) {
-        
-    }*/
+        self.shareInstance().showProgress(status)
+    }
     
     public class func showError(status: String) {
         self.shareInstance().showImage(nil, status: status, statusType: .Error)

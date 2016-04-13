@@ -45,5 +45,14 @@ class ViewController: UIViewController {
     @IBAction func showImage(sender: AnyObject) {
         ZProgressHUD.showImage(UIImage(named: "show"))
     }
+    
+    @IBAction func showProgress(sender: AnyObject) {
+        ZProgressHUD.showProgress(0.75)
+    }
+    
+    @IBAction func showProgressWithStatus(sender: AnyObject) {
+        ZProgressHUD.showProgress(0.75, status: "正在加载")
+    }
+    
 }
 
