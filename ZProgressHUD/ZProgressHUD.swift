@@ -37,7 +37,7 @@ public class ZProgressHUD: UIView {
     private var defaultPorgressType: ZProgressHUDProgressType = .General
     private var defaultStatusType: ZProgressHUDStatusType = .Indefinite
     private var minimumDismissDuration: NSTimeInterval = 3.0
-    private var fadeInAnimationDuration: NSTimeInterval = 1.0
+    private var fadeInAnimationDuration: NSTimeInterval = 0.15
     private var fadeOutAnimationDuration: NSTimeInterval = 0.25
     
     private var status: String? {
@@ -62,7 +62,6 @@ public class ZProgressHUD: UIView {
     private var statusLabel: UILabel?
     private var imageView: UIImageView?
     private var hudView: UIView?
-    private var progressView: ZProgressAnimatedView?
     private var indefinteView:ZIndefiniteAnimatedView?
     private var bgLayer: CALayer?
     
@@ -183,10 +182,7 @@ public class ZProgressHUD: UIView {
             self.indefinteView = ZIndefiniteAnimatedView(frame: CGRectZero)
             self.indefinteView?.strokeColor = self.foregroundColor()
             break
-        case .Progress:
-            if self.progressView != nil { break }
-            self.progressView = ZProgressAnimatedView(frame: CGRectZero)
-            break
+        default: break
         }
     
         if self.imageView != nil {
@@ -237,16 +233,14 @@ public class ZProgressHUD: UIView {
         self.prepare()
         
         if self.overlayView?.superview == nil {
-            dispatch_async(dispatch_get_main_queue()) {
-                for window in UIApplication.sharedApplication().windows.reverse() {
-                    let windowOnMainScreen = window.screen == UIScreen.mainScreen()
-                    let windowIsVisible = !window.hidden && window.alpha > 0;
-                    let windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
-                    
-                    if windowOnMainScreen && windowIsVisible && windowLevelNormal {
-                        window.addSubview(self.overlayView!)
-                        break
-                    }
+            for window in UIApplication.sharedApplication().windows.reverse() {
+                let windowOnMainScreen = window.screen == UIScreen.mainScreen()
+                let windowIsVisible = !window.hidden && window.alpha > 0;
+                let windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
+                
+                if windowOnMainScreen && windowIsVisible && windowLevelNormal {
+                    window.addSubview(self.overlayView!)
+                    break
                 }
             }
         } else {
@@ -276,11 +270,7 @@ public class ZProgressHUD: UIView {
                 self.hudView?.addSubview(self.indefinteView!)
             }
             break
-        case .Progress:
-            if self.progressView?.superview == nil {
-                self.hudView?.addSubview(self.progressView!)
-            }
-            break
+        default: break
         }
         
         self.placeSubviews()
@@ -297,8 +287,7 @@ public class ZProgressHUD: UIView {
         
         var pureLabel:  Bool = false
         if self.imageView?.superview == nil &&
-            self.indefinteView?.superview == nil &&
-            self.progressView?.superview == nil {
+            self.indefinteView?.superview == nil {
             pureLabel = true
             minSize = self.pureLabelminmumSize
         }
@@ -350,7 +339,6 @@ public class ZProgressHUD: UIView {
         let center = CGPointMake(rect.width / 2.0, centerY)
         self.indefinteView?.center = center
         self.imageView?.center = center
-        self.progressView?.center = center
         
         CATransaction.commit()
     }
@@ -359,7 +347,6 @@ public class ZProgressHUD: UIView {
         
         self.imageView?.removeFromSuperview()
         self.statusLabel?.removeFromSuperview()
-        self.progressView?.removeFromSuperview()
         self.indefinteView?.removeFromSuperview()
         self.hudView?.removeFromSuperview()
         self.removeFromSuperview()
@@ -394,26 +381,28 @@ public class ZProgressHUD: UIView {
     private func show(status: String?) {
         self.status = status
         self.defaultStatusType = .Indefinite
-        self.addSubviews()
-        
-        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
-            self.alpha = 1.0
-            self.overlayView?.alpha = 1.0
-        })
+        dispatch_async(dispatch_get_main_queue()) {
+            self.addSubviews()
+            UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+                self.alpha = 1.0
+                self.overlayView?.alpha = 1.0
+            })
+        }
     }
     
     private func showImage(image: UIImage?, status: String? = nil, statusType: ZProgressHUDStatusType = .Custom) {
         self.status = status
         self.defaultStatusType = statusType
         self.customImage = image
-        self.addSubviews()
-        
-        UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
-            self.alpha = 1.0
-            self.overlayView?.alpha = 1.0
-            }, completion: { (flag) in
-               self.setFadeOutTimter(self.minimumDismissDuration)
-        })
+        dispatch_async(dispatch_get_main_queue()) { 
+            self.addSubviews()
+            UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
+                self.alpha = 1.0
+                self.overlayView?.alpha = 1.0
+                }, completion: { (flag) in
+                    self.setFadeOutTimter(self.minimumDismissDuration)
+            })
+        }
     }
     
     private func dismiss(delay: NSTimeInterval = 0.0) {
@@ -421,15 +410,16 @@ public class ZProgressHUD: UIView {
             self.setFadeOutTimter(delay)
             return
         }
-        
-        UIView.animateWithDuration(self.fadeOutAnimationDuration, animations: {
-            self.alpha = 0.0
-            self.overlayView?.alpha = 0.0
-            }, completion: { (flag) in
-                self.fadeOutTimer?.invalidate()
-                self.fadeOutTimer = nil
-                self.removeSubviews()
-        })
+        dispatch_async(dispatch_get_main_queue()) {
+            UIView.animateWithDuration(self.fadeOutAnimationDuration, animations: {
+                self.alpha = 0.0
+                self.overlayView?.alpha = 0.0
+                }, completion: { (flag) in
+                    self.fadeOutTimer?.invalidate()
+                    self.fadeOutTimer = nil
+                    self.removeSubviews()
+            })
+        }
     }
     
     private func setFadeOutTimter (timeInterval: NSTimeInterval) {
@@ -509,18 +499,6 @@ private extension ZProgressHUD {
 
 // MARK:- Setters
 public extension ZProgressHUD {
-    /*
-    public class func setRingThickness(ringThickness: CGFloat) {
-        
-    }
-    
-    public class func setRingRadius(radius: CGFloat) {
-        
-    }
-    
-    public class func setRingNoTextRadius(radius: CGFloat) {
-        
-    }*/
 
     public class func setMinmumSize(size: CGSize) {
         self.shareInstance().minmumSize = size
@@ -577,10 +555,6 @@ public extension ZProgressHUD {
     public class func setDefaultMaskType(maskType: ZProgressHUDMaskType) {
         self.shareInstance().defaultMaskType = maskType
     }
-    /*
-    public class func setDefaultPorgressType(progressType: ZProgressHUDProgressType) {
-        self.shareInstance().defaultPorgressType = progressType
-    }*/
     
     public class func setMinimumDismissDuration(duration: NSTimeInterval) {
         self.shareInstance().minimumDismissDuration = duration
@@ -609,14 +583,9 @@ public extension ZProgressHUD {
     public class func showImage(image: UIImage?, status: String? = nil) {
         self.shareInstance().showImage(image, status: status, statusType: .Custom)
     }
-    /*
-    public class func showProgress(progress: Double, status: String? = nil) {
-        
-    }*/
     
     public class func showError(status: String) {
         self.shareInstance().showImage(nil, status: status, statusType: .Error)
-
     }
     
     public class func showInfo(status: String) {
