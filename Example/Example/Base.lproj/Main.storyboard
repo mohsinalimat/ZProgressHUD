@@ -17,43 +17,43 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kIE-3H-vs8">
-                                <rect key="frame" x="277" y="35" width="46" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kIE-3H-vs8">
+                                <rect key="frame" x="281.5" y="84" width="37" height="30"/>
                                 <state key="normal" title="show"/>
                                 <connections>
                                     <action selector="show:" destination="BYZ-38-t0r" eventType="touchUpInside" id="BAZ-gu-ltP"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O5s-Uw-Z2P">
-                                <rect key="frame" x="239" y="137" width="112" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O5s-Uw-Z2P">
+                                <rect key="frame" x="244" y="158" width="112" height="30"/>
                                 <state key="normal" title="showWithStatus"/>
                                 <connections>
                                     <action selector="showStatus:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IhC-dj-QHV"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ux-Io-dXd">
-                                <rect key="frame" x="248" y="313" width="94" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3ux-Io-dXd">
+                                <rect key="frame" x="253" y="306" width="94" height="30"/>
                                 <state key="normal" title="showSuccess"/>
                                 <connections>
                                     <action selector="showSuccess:" destination="BYZ-38-t0r" eventType="touchUpInside" id="oAC-vP-7wM"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JsK-P2-kVF">
-                                <rect key="frame" x="269" y="404" width="62" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JsK-P2-kVF">
+                                <rect key="frame" x="269" y="380" width="62" height="30"/>
                                 <state key="normal" title="showInfo"/>
                                 <connections>
                                     <action selector="showInfo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="erM-Ef-2tu"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jSq-ja-Abj">
-                                <rect key="frame" x="277" y="467" width="46" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jSq-ja-Abj">
+                                <rect key="frame" x="261" y="454" width="78" height="30"/>
                                 <state key="normal" title="showImage"/>
                                 <connections>
                                     <action selector="showImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jtF-72-7ad"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vds-HQ-F92">
-                                <rect key="frame" x="260" y="226" width="70" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vds-HQ-F92">
+                                <rect key="frame" x="265" y="232" width="70" height="30"/>
                                 <state key="normal" title="showError"/>
                                 <connections>
                                     <action selector="showError:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Muy-OR-Ntb"/>
