@@ -12,7 +12,6 @@
 		BAC6D3251CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */; };
 		BAC6D3261CBBD62F00120E14 /* ZProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */; };
 		BAC6D3281CBBD63600120E14 /* ZProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */; };
-		BAC6D32F1CBBD6FB00120E14 /* ZProgressAnimatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D32E1CBBD6FB00120E14 /* ZProgressAnimatedView.swift */; };
 		BAC6D3311CBBD74800120E14 /* ZGradientLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */; };
 /* End PBXBuildFile section */
 
@@ -24,7 +23,6 @@
 		BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZIndefiniteAnimatedView.swift; sourceTree = "<group>"; };
 		BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZProgressHUD.swift; sourceTree = "<group>"; };
 		BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ZProgressHUD.bundle; sourceTree = "<group>"; };
-		BAC6D32E1CBBD6FB00120E14 /* ZProgressAnimatedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZProgressAnimatedView.swift; sourceTree = "<group>"; };
 		BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZGradientLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -61,7 +59,6 @@
 				BAC6D3211CBBD62F00120E14 /* Config.swift */,
 				BAC6D2F61CBBD43000120E14 /* Info.plist */,
 				BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */,
-				BAC6D32E1CBBD6FB00120E14 /* ZProgressAnimatedView.swift */,
 				BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */,
 				BAC6D2F41CBBD43000120E14 /* ZProgressHUD.h */,
 				BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */,
@@ -153,7 +150,6 @@
 				BAC6D3261CBBD62F00120E14 /* ZProgressHUD.swift in Sources */,
 				BAC6D3311CBBD74800120E14 /* ZGradientLayer.swift in Sources */,
 				BAC6D3251CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift in Sources */,
-				BAC6D32F1CBBD6FB00120E14 /* ZProgressAnimatedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
