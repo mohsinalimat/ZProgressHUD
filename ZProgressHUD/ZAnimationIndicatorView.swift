@@ -117,7 +117,7 @@ internal class ZAnimationIndicatorView: UIView {
         animation.repeatCount = Float.infinity
         animation.fillMode = kCAFillModeForwards
         animation.autoreverses = false
-        self.maskLayer.addAnimation(animation, forKey: "com.zero.animation.rotate")
+        self.maskLayer.addAnimation(animation, forKey: "com.zevwings.animation.rotate")
         
         let strokeStartAnimation = CABasicAnimation(keyPath: "strokeStart")
         strokeStartAnimation.fromValue = 0.015
@@ -133,7 +133,7 @@ internal class ZAnimationIndicatorView: UIView {
         animationGroup.removedOnCompletion = false
         animationGroup.timingFunction = timingFunction
         animationGroup.animations = [strokeStartAnimation, strokeEndAnimation]
-        self.activityIndicatorLayer.addAnimation(animationGroup, forKey: "com.zero.animation.progress")
+        self.activityIndicatorLayer.addAnimation(animationGroup, forKey: "com.zevwings.animation.progress")
         
         self.isAnimating = true
     }

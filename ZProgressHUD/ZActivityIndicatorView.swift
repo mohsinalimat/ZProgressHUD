@@ -99,7 +99,7 @@ class ZActivityIndicatorView: UIView {
         animation.toValue = CGFloat(2 * M_PI)
         animation.repeatCount = Float.infinity
         animation.removedOnCompletion = false
-        self.activityIndicatorLayer.addAnimation(animation, forKey: "com.zero.animation.rotate")
+        self.activityIndicatorLayer.addAnimation(animation, forKey: "com.zevwings.animation.rotate")
         
         let headAnimation = CABasicAnimation()
         headAnimation.keyPath = "strokeStart"
@@ -137,7 +137,7 @@ class ZActivityIndicatorView: UIView {
         animations.animations = [headAnimation, tailAnimation, endHeadAnimation, endTailAnimation]
         animations.repeatCount = Float.infinity
         animations.removedOnCompletion = false
-        self.activityIndicatorLayer.addAnimation(animations, forKey: "com.zero.animation.stroke")
+        self.activityIndicatorLayer.addAnimation(animations, forKey: "com.zevwings.animation.stroke")
         
         self.isAnimating = true
  
@@ -149,8 +149,8 @@ class ZActivityIndicatorView: UIView {
     func stopAnimating() {
         if !self.isAnimating { return }
         
-        self.activityIndicatorLayer.removeAnimationForKey("com.zero.animation.rotate")
-        self.activityIndicatorLayer.removeAnimationForKey("com.zero.animation.stroke")
+        self.activityIndicatorLayer.removeAnimationForKey("com.zevwings.animation.rotate")
+        self.activityIndicatorLayer.removeAnimationForKey("com.zevwings.animation.stroke")
         self.isAnimating = false;
         
         if self.hidesWhenStopped {

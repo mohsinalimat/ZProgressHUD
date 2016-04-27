@@ -47,7 +47,7 @@ public enum ZProgressHUDStatusType {
 }
 
 
-public let ZProgressHUDDidRecieveTouchEvent: String = "com.zero.progresshud.touchevent"
+public let ZProgressHUDDidRecieveTouchEvent: String = "com.zevwings.events.touchevent"
 
 public class ZProgressHUD: UIView {
     
@@ -136,7 +136,6 @@ public class ZProgressHUD: UIView {
                                           .FlexibleTopMargin,
                                           .FlexibleRightMargin,
                                           .FlexibleLeftMargin ]
-        hudView.layer.cornerRadius = self.cornerRadius
         return hudView
     }()
     
@@ -240,7 +239,7 @@ public class ZProgressHUD: UIView {
             visibleKeyboardHeight = 0.0
         }
         
-        UIView.beginAnimations("com.zero.animation.positionhud", context: nil)
+        UIView.beginAnimations("com.zevwings.animation.positionhud", context: nil)
         UIView.setAnimationDuration(0.25)
         UIView.setAnimationCurve(UIViewAnimationCurve.EaseInOut)
         self.frame = UIScreen.mainScreen().bounds
@@ -383,7 +382,6 @@ extension ZProgressHUD {
         self.placeSubviews()
     }
     
-    // TODO: - 完善视图位置计算
     // set the view's frame
     private func placeSubviews() {
         var rect = CGRectZero
@@ -774,7 +772,7 @@ internal extension UIImage {
     /**
      get the image from this framework
      
-     - parameter frameworknamed: 图片名称
+     - parameter frameworknamed: image name
      
      - returns: UIImage
      */
