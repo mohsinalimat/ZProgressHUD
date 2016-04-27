@@ -7,20 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA41A4791CCFAACA004CF3C5 /* ZActivityIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA41A4771CCFAACA004CF3C5 /* ZActivityIndicatorView.swift */; };
+		BA41A47A1CCFAACA004CF3C5 /* ZAnimationIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA41A4781CCFAACA004CF3C5 /* ZAnimationIndicatorView.swift */; };
 		BAC6D2F51CBBD43000120E14 /* ZProgressHUD.h in Headers */ = {isa = PBXBuildFile; fileRef = BAC6D2F41CBBD43000120E14 /* ZProgressHUD.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BAC6D3241CBBD62F00120E14 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3211CBBD62F00120E14 /* Config.swift */; };
-		BAC6D3251CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */; };
 		BAC6D3261CBBD62F00120E14 /* ZProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */; };
 		BAC6D3281CBBD63600120E14 /* ZProgressHUD.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */; };
 		BAC6D3311CBBD74800120E14 /* ZGradientLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BA41A4771CCFAACA004CF3C5 /* ZActivityIndicatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZActivityIndicatorView.swift; sourceTree = "<group>"; };
+		BA41A4781CCFAACA004CF3C5 /* ZAnimationIndicatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZAnimationIndicatorView.swift; sourceTree = "<group>"; };
 		BAC6D2F11CBBD43000120E14 /* ZProgressHUD.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ZProgressHUD.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC6D2F41CBBD43000120E14 /* ZProgressHUD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZProgressHUD.h; sourceTree = "<group>"; };
 		BAC6D2F61CBBD43000120E14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BAC6D3211CBBD62F00120E14 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
-		BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZIndefiniteAnimatedView.swift; sourceTree = "<group>"; };
 		BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZProgressHUD.swift; sourceTree = "<group>"; };
 		BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ZProgressHUD.bundle; sourceTree = "<group>"; };
 		BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZGradientLayer.swift; sourceTree = "<group>"; };
@@ -56,13 +56,13 @@
 		BAC6D2F31CBBD43000120E14 /* ZProgressHUD */ = {
 			isa = PBXGroup;
 			children = (
-				BAC6D3211CBBD62F00120E14 /* Config.swift */,
 				BAC6D2F61CBBD43000120E14 /* Info.plist */,
-				BAC6D3221CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift */,
+				BA41A4771CCFAACA004CF3C5 /* ZActivityIndicatorView.swift */,
+				BA41A4781CCFAACA004CF3C5 /* ZAnimationIndicatorView.swift */,
+				BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */,
 				BAC6D3271CBBD63600120E14 /* ZProgressHUD.bundle */,
 				BAC6D2F41CBBD43000120E14 /* ZProgressHUD.h */,
 				BAC6D3231CBBD62F00120E14 /* ZProgressHUD.swift */,
-				BAC6D3301CBBD74800120E14 /* ZGradientLayer.swift */,
 			);
 			path = ZProgressHUD;
 			sourceTree = "<group>";
@@ -146,10 +146,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BAC6D3241CBBD62F00120E14 /* Config.swift in Sources */,
 				BAC6D3261CBBD62F00120E14 /* ZProgressHUD.swift in Sources */,
+				BA41A47A1CCFAACA004CF3C5 /* ZAnimationIndicatorView.swift in Sources */,
+				BA41A4791CCFAACA004CF3C5 /* ZActivityIndicatorView.swift in Sources */,
 				BAC6D3311CBBD74800120E14 /* ZGradientLayer.swift in Sources */,
-				BAC6D3251CBBD62F00120E14 /* ZIndefiniteAnimatedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

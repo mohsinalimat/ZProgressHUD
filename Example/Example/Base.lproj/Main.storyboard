@@ -18,7 +18,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kIE-3H-vs8">
-                                <rect key="frame" x="281.5" y="84" width="37" height="30"/>
+                                <rect key="frame" x="281" y="84" width="37" height="30"/>
                                 <state key="normal" title="show"/>
                                 <connections>
                                     <action selector="show:" destination="BYZ-38-t0r" eventType="touchUpInside" id="BAZ-gu-ltP"/>
@@ -59,10 +59,19 @@
                                     <action selector="showError:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Muy-OR-Ntb"/>
                                 </connections>
                             </button>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="ADz-Op-agE">
+                                <rect key="frame" x="250" y="28" width="100" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="vYr-u1-GLa"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="O5s-Uw-Z2P" firstAttribute="top" secondItem="kIE-3H-vs8" secondAttribute="bottom" constant="44" id="17o-4V-wxP"/>
+                            <constraint firstItem="ADz-Op-agE" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="3zs-1s-xVt"/>
                             <constraint firstItem="jSq-ja-Abj" firstAttribute="top" secondItem="JsK-P2-kVF" secondAttribute="bottom" constant="44" id="BUs-zm-Bfj"/>
                             <constraint firstItem="3ux-Io-dXd" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="EFu-Bn-nWD"/>
                             <constraint firstItem="JsK-P2-kVF" firstAttribute="top" secondItem="3ux-Io-dXd" secondAttribute="bottom" constant="44" id="JCg-3o-Myw"/>
@@ -71,6 +80,7 @@
                             <constraint firstItem="kIE-3H-vs8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="ZmV-Ug-Xsf"/>
                             <constraint firstItem="Vds-HQ-F92" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Zy2-lD-I5G"/>
                             <constraint firstItem="kIE-3H-vs8" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="64" id="brE-YU-zcQ"/>
+                            <constraint firstItem="ADz-Op-agE" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="eow-8s-yTr"/>
                             <constraint firstItem="JsK-P2-kVF" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="kol-fQ-MoR"/>
                             <constraint firstItem="3ux-Io-dXd" firstAttribute="top" secondItem="Vds-HQ-F92" secondAttribute="bottom" constant="44" id="nqu-Mp-uJz"/>
                             <constraint firstItem="jSq-ja-Abj" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="oSB-cZ-Mk5"/>

@@ -8,20 +8,59 @@
 
 import UIKit
 
+public enum ZProgressHUDStyle {
+    case Ligtht
+    case Dark
+    case Custom
+}
+
+public enum ZProgressHUDMaskType {
+    case None
+    case Clear
+    case Black
+    case Gradient
+    case Custom
+}
+
+public enum ZProgressHUDPositionType {
+    case Bottom
+    case Center
+}
+
+public enum ZProgressHUDProgressType {
+    case General
+    case Animated
+    case Native
+}
+
+public enum ZProgressHUDStatusType {
+    
+    case Error
+    case Success
+    case Info
+    case Custom
+    
+    case PureStatus
+    
+    case Indicator
+    case Progress // development
+}
+
+
+public let ZProgressHUDDidRecieveTouchEvent: String = "com.zero.progresshud.touchevent"
+
 public class ZProgressHUD: UIView {
     
-    private var ringThickness: CGFloat = 2.0
-    private var ringRadius: CGFloat = 18.0
-    private var ringNoTextRadius: CGFloat = 24.0
-    
+    private var lineWidth: CGFloat = 2.0
     private var fadeOutTimer: NSTimer?
     
     private var minmumSize = CGSizeMake(100, 100)
     private var pureLabelminmumSize = CGSizeMake(100, 28.0)
-    private let maxmumLabelSize = CGSizeMake(160, 260)
+    private let maxmumLabelSize = CGSizeMake(CGRectGetWidth(UIScreen.mainScreen().bounds) / 2.0, 260)
     private let minmumLabelHeight: CGFloat = 20.0
-    private var font = UIFont.systemFontOfSize(14.0)
-    private var cornerRadius: CGFloat = 14.0
+    private var minimumDismissDuration: NSTimeInterval = 3.0
+    private var fadeInAnimationDuration: NSTimeInterval = 0.15
+    private var fadeOutAnimationDuration: NSTimeInterval = 0.25
 
     private var errorImage: UIImage?
     private var successImage: UIImage?
@@ -31,39 +70,123 @@ public class ZProgressHUD: UIView {
     private var fgColor: UIColor?
     private var bgColor: UIColor?
     private var bgLayerColor: UIColor?
-    
+
     private var defaultStyle: ZProgressHUDStyle = .Dark
     private var defaultMaskType: ZProgressHUDMaskType = .None
     private var defaultPorgressType: ZProgressHUDProgressType = .General
-    private var defaultStatusType: ZProgressHUDStatusType = .Indefinite
-    private var minimumDismissDuration: NSTimeInterval = 3.0
-    private var fadeInAnimationDuration: NSTimeInterval = 0.15
-    private var fadeOutAnimationDuration: NSTimeInterval = 0.25
+    private var defaultStatusType: ZProgressHUDStatusType = .Indicator
+    private var defaultPositionType: ZProgressHUDPositionType = .Center
     
-    private var status: String? {
+    private var centerOffset: UIOffset = UIOffsetZero
+    
+    private var font = UIFont.systemFontOfSize(16.0) {
         didSet {
-            self.statusLabel?.text = self.status
+            self.statusLabel.font = self.font
             self.placeSubviews()
         }
     }
     
-    private var centerOffset: UIOffset = UIOffsetZero {
+    private var status: String?
+    
+    private var pureLabelCornerRadius: CGFloat  = 8.0 {
         didSet {
-            if let center = self.hudView?.center {
-                let c = CGPointMake(center.x + self.centerOffset.horizontal,
-                                    center.y + self.centerOffset.vertical)
-                self.hudView?.center = c
-            }
+            self.hudView.layer.cornerRadius = self.pureLabelCornerRadius
         }
     }
     
-    // MARK: - Page Controls
-    private var overlayView: UIControl?
-    private var statusLabel: UILabel?
-    private var imageView: UIImageView?
-    private var hudView: UIView?
-    private var indefinteView:ZIndefiniteAnimatedView?
-    private var bgLayer: CALayer?
+    private var cornerRadius: CGFloat = 14.0 {
+        didSet {
+            self.hudView.layer.cornerRadius = self.cornerRadius
+        }
+    }
+    
+    // MARK: - Widget
+    private lazy var overlayView: UIControl = {
+        let overlayView = UIControl(frame: self.frame)
+        overlayView.backgroundColor = UIColor.clearColor()
+        overlayView.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
+        overlayView.addTarget(self,
+                              action: #selector(ZProgressHUD.overlayViewDidReceiveTouchEvent(_:event:)),
+                              forControlEvents: .TouchDown)
+
+        return overlayView
+    }()
+    
+    private lazy var statusLabel: UILabel = {
+        var statusLabel = UILabel(frame: CGRectZero)
+        statusLabel.backgroundColor = UIColor.clearColor()
+        statusLabel.adjustsFontSizeToFitWidth = true
+        statusLabel.textAlignment = .Center
+        statusLabel.font = self.font
+        statusLabel.baselineAdjustment = .AlignCenters
+        statusLabel.numberOfLines = 0
+        return statusLabel
+    }()
+    
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView(frame: CGRectMake(0, 0, 28.0, 28.0))
+        imageView.userInteractionEnabled = false
+        return imageView
+    }()
+    
+    private lazy var hudView: UIView = {
+        var hudView = UIView(frame: CGRectMake(0, 0, self.minmumSize.width, self.minmumSize.height))
+        hudView.layer.masksToBounds = true
+        hudView.autoresizingMask = [.FlexibleBottomMargin,
+                                          .FlexibleTopMargin,
+                                          .FlexibleRightMargin,
+                                          .FlexibleLeftMargin ]
+        hudView.layer.cornerRadius = self.cornerRadius
+        return hudView
+    }()
+    
+    private lazy var colouredLayer: CALayer = {
+        let colouredLayer = CALayer()
+        colouredLayer.frame = self.bounds
+        let backgroundColor = self.defaultMaskType == .Custom ?
+            self.bgLayerColor?.CGColor : UIColor(white: 0.0, alpha: 0.4).CGColor
+        colouredLayer.backgroundColor = backgroundColor
+        colouredLayer.setNeedsDisplay()
+        return colouredLayer
+    }()
+    
+    private lazy var gradientLayer: CALayer = {
+        let gradientLayer = ZGradientLayer()
+        gradientLayer.frame = self.bounds
+        var gradientCenter = self.center
+        gradientCenter.y = (self.bounds.size.height) / 2
+        gradientLayer.gradientCenter = gradientCenter
+        gradientLayer.setNeedsDisplay()
+        return gradientLayer
+    }()
+    
+    private var backgroundLayer: CALayer? = nil
+    
+    private lazy var animationIndicator: ZAnimationIndicatorView = {
+        let animationIndicator = ZAnimationIndicatorView(frame: CGRectMake(0, 0, 37, 37))
+        animationIndicator.lineWidth = self.lineWidth
+        animationIndicator.strokeColor = self.foregroundColor() ?? UIColor.whiteColor()
+        return animationIndicator
+    }()
+    
+    private lazy var activityIndicator: ZActivityIndicatorView = {
+        let activityIndicator = ZActivityIndicatorView(frame: CGRectMake(0, 0, 37, 37))
+        activityIndicator.lineWidth = self.lineWidth
+        activityIndicator.strokeColor = self.foregroundColor() ?? UIColor.whiteColor()
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.autoAnimating = true
+        return activityIndicator
+    }()
+    
+    private lazy var nativeIndicator: UIActivityIndicatorView = {
+        let nativeIndicator = UIActivityIndicatorView(activityIndicatorStyle: .WhiteLarge)
+        nativeIndicator.tintColor = self.foregroundColor() ?? UIColor.whiteColor()
+        nativeIndicator.hidesWhenStopped = true
+        nativeIndicator.startAnimating()
+        return nativeIndicator
+    }()
+    
+    private var indicatorView: UIView?
     
     // MARK: - Singleton && initialization
     internal class func shareInstance() -> ZProgressHUD {
@@ -81,18 +204,24 @@ public class ZProgressHUD: UIView {
         super.init(frame: frame)
         
         NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: #selector(ZProgressHUD.rotate(_:)),
-                                                         name: UIDeviceOrientationDidChangeNotification,
+                                                         selector: #selector(ZProgressHUD.positionHUD(_:)),
+                                                         name:UIApplicationDidChangeStatusBarOrientationNotification,
                                                          object: nil)
         
-        self.errorImage = Config.imageFor("error.png")
-        self.successImage = Config.imageFor("success")
-        self.infoImage = Config.imageFor("info")
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(ZProgressHUD.positionHUD(_:)),
+                                                         name: UIKeyboardWillHideNotification,
+                                                         object: nil)
         
-        self.alpha = 0
-        self.overlayView?.alpha = 0
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(ZProgressHUD.positionHUD(_:)),
+                                                         name: UIKeyboardWillShowNotification,
+                                                         object: nil)
+        self.userInteractionEnabled = false
         
-        self.prepare()
+        self.errorImage = UIImage.resourceNamed("error.png")
+        self.successImage = UIImage.resourceNamed("success")
+        self.infoImage = UIImage.resourceNamed("info")
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -103,171 +232,149 @@ public class ZProgressHUD: UIView {
         NSNotificationCenter.defaultCenter().removeObserver(UIDeviceOrientationDidChangeNotification)
     }
     
-    // MARK: -
+    // MARK: - Events
+    // recieve notification and position the subviews
+    internal func positionHUD(notification: NSNotification?) {
+        var visibleKeyboardHeight = self.visibleKeyboardHeight;
+        if notification?.name == UIKeyboardWillHideNotification {
+            visibleKeyboardHeight = 0.0
+        }
+        
+        UIView.beginAnimations("com.zero.animation.positionhud", context: nil)
+        UIView.setAnimationDuration(0.25)
+        UIView.setAnimationCurve(UIViewAnimationCurve.EaseInOut)
+        self.frame = UIScreen.mainScreen().bounds
+        self.backgroundLayer?.frame = self.frame
+        self.overlayView.frame = self.frame
+        self.hudView.center = CGPointMake(CGRectGetWidth(self.frame)/2.0 + self.centerOffset.horizontal, CGRectGetHeight(self.frame)/2.0 + self.centerOffset.vertical - visibleKeyboardHeight/2.0)
+        UIView.commitAnimations()
+    }
+    
+    // overlay touch event
+    internal func overlayViewDidReceiveTouchEvent(sender: AnyObject?, event: UIEvent) {
+        NSNotificationCenter.defaultCenter().postNotificationName(ZProgressHUDDidRecieveTouchEvent,
+                                                                  object: self,
+                                                                  userInfo: nil)
+    }
+}
+
+// MARK: - Basic Views
+extension ZProgressHUD {
+    // set the views' properties
     private func prepare() {
         
         if !self.isVisible() {
             self.alpha = 0
-            self.overlayView?.alpha = 0
-        }
-        /**
-         *  set the overlayer view
-         */
-        if self.overlayView == nil {
-            self.overlayView = UIControl(frame: self.frame)
-            self.overlayView?.backgroundColor = UIColor.clearColor()
-            self.overlayView?.autoresizingMask = [.FlexibleWidth, .FlexibleHeight]
-            self.overlayView?.addTarget(self,
-                                       action: #selector(ZProgressHUD.overlayViewDidReceiveTouchEvent(_:event:)),
-                                       forControlEvents: .TouchDown)
+            self.overlayView.alpha = 0
         }
         
         if self.defaultMaskType != .None {
-            self.overlayView?.userInteractionEnabled = true
+            self.overlayView.userInteractionEnabled = true
             self.accessibilityLabel = status
             self.isAccessibilityElement = true
+            
         } else {
-            self.overlayView?.userInteractionEnabled = false
-            self.hudView?.accessibilityLabel = status
-            self.hudView?.isAccessibilityElement = true
+            self.overlayView.userInteractionEnabled = false
+            self.hudView.accessibilityLabel = status
+            self.hudView.isAccessibilityElement = true
         }
         
-        /**
-         *  set the base hud view
-         */
-        if self.hudView == nil {
-            self.hudView = UIView(frame: CGRectMake(0, 0, minmumSize.width, minmumSize.height))
-            self.hudView?.layer.masksToBounds = true
-            self.hudView?.autoresizingMask = [.FlexibleBottomMargin,
-                                              .FlexibleTopMargin,
-                                              .FlexibleRightMargin,
-                                              .FlexibleLeftMargin ]
-            self.hudView?.layer.cornerRadius = self.cornerRadius
-        }
-        self.hudView?.backgroundColor = self.backgroundColor()
+        self.hudView.layer.cornerRadius = self.defaultStatusType == .PureStatus ?
+            self.pureLabelCornerRadius :
+            self.cornerRadius
+        self.hudView.backgroundColor = self.backgroundColor()
         
-        /**
-         *  set the status label
-         *  if status exist
-         */
-        if self.status != nil && !self.status!.isEmpty && self.statusLabel == nil {
-            self.statusLabel = UILabel(frame: CGRectZero)
-            self.statusLabel?.backgroundColor = UIColor.clearColor()
-            self.statusLabel?.adjustsFontSizeToFitWidth = true
-            self.statusLabel?.textAlignment = .Center
-            self.statusLabel?.font = self.font
-            self.statusLabel?.baselineAdjustment = .AlignCenters
-            self.statusLabel?.numberOfLines = 0
-        }
+        self.statusLabel.textColor = self.foregroundColor()
+        self.statusLabel.text = self.status
         
-        if self.statusLabel != nil {
-            self.statusLabel?.textColor = self.foregroundColor()
-            self.statusLabel?.text = self.status
-        }
-        
-        /**
-         *  set the status view
-         */
         switch self.defaultStatusType {
-        case .Success, .Error, .Info:
-            if self.imageView != nil { break }
-            self.imageView = UIImageView(frame: CGRectMake(0, 0, 28.0, 28.0))
+        case .Success, .Error, .Info :
+            self.imageView.image = self.statusImage?.tintColor(self.foregroundColor())
             break
         case .Custom:
-            if self.customImage == nil || self.imageView != nil { break }
-            self.imageView = UIImageView(frame: CGRectMake(0, 0, 28.0, 28.0))
+            self.imageView.image = self.statusImage
             break
-        case .Indefinite:
-            if self.indefinteView != nil { break }
-            self.indefinteView = ZIndefiniteAnimatedView(frame: CGRectZero)
-            self.indefinteView?.strokeColor = self.foregroundColor()
+        case .Indicator:
+            switch self.defaultPorgressType {
+            case .Native:
+                self.indicatorView = self.nativeIndicator
+                (self.indicatorView as? UIActivityIndicatorView)?.tintColor = self.foregroundColor()
+                break
+            case .Animated:
+                self.indicatorView = self.animationIndicator
+                (self.indicatorView as? ZAnimationIndicatorView)?.strokeColor = self.foregroundColor()
+                break
+            default:
+                self.indicatorView = self.activityIndicator
+                (self.indicatorView as? ZActivityIndicatorView)?.strokeColor = self.foregroundColor()
+                break
+            }
             break
         default: break
         }
-    
-        if self.imageView != nil {
-            self.imageView?.image = self.statusImage()?.tintColor(self.foregroundColor())
-        }
         
-        /**
-         *  set the background mask
-         */
-        if self.bgLayer != nil {
-            self.bgLayer?.removeFromSuperlayer()
-            self.bgLayer = nil
+        // set up the background layer
+        if self.backgroundLayer != nil {
+            self.backgroundLayer?.removeFromSuperlayer()
+            self.backgroundLayer = nil
         }
         
         switch self.defaultMaskType {
         case .Black, .Custom:
-            
-                self.bgLayer = CALayer()
-                self.bgLayer?.frame = self.bounds
-                let bgColor = self.defaultMaskType == .Custom ?
-                    self.bgLayerColor?.CGColor : UIColor(white: 0.0, alpha: 0.4).CGColor
-                self.bgLayer?.backgroundColor = bgColor
-                self.bgLayer?.setNeedsDisplay()
-                self.layer.insertSublayer(self.bgLayer!, atIndex: 0)
+            self.backgroundLayer = self.colouredLayer
             break
         case .Gradient:
-            let layer = ZGradientLayer()
-            layer.frame = self.bounds
-            
-            var gradientCenter = self.center
-            gradientCenter.y = (self.bounds.size.height) / 2
-            layer.gradientCenter = gradientCenter;
-            
-            self.bgLayer = layer
-            self.bgLayer?.setNeedsDisplay()
-            self.layer.insertSublayer(self.bgLayer!, atIndex: 0)
+            self.backgroundLayer = self.gradientLayer
             break
         default: break
-            
+        }
+        
+        if self.backgroundLayer != nil {
+            self.layer.insertSublayer(self.backgroundLayer!, atIndex: 0)
         }
     }
     
-    /**
-     *  add the subviews
-     */
+    //  add the subviews
     private func addSubviews() {
         self.removeSubviews()
         self.prepare()
         
-        if self.overlayView?.superview == nil {
+        if self.overlayView.superview == nil {
             for window in UIApplication.sharedApplication().windows.reverse() {
                 let windowOnMainScreen = window.screen == UIScreen.mainScreen()
-                let windowIsVisible = !window.hidden && window.alpha > 0;
-                let windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
+                let windowIsVisible = !window.hidden && window.alpha > 0
+                let windowLevelNormal = window.windowLevel == UIWindowLevelNormal
                 
                 if windowOnMainScreen && windowIsVisible && windowLevelNormal {
-                    window.addSubview(self.overlayView!)
+                    window.addSubview(self.overlayView)
                     break
                 }
             }
         } else {
-            self.overlayView?.superview?.bringSubviewToFront(self.overlayView!)
+            self.overlayView.superview?.bringSubviewToFront(self.overlayView)
         }
         
         if self.superview == nil {
-            self.overlayView?.addSubview(self)
+            self.overlayView.addSubview(self)
         }
         
-        if self.hudView?.superview == nil {
-            self.addSubview(self.hudView!)
+        if self.hudView.superview == nil {
+            self.addSubview(self.hudView)
         }
         
-        if self.status != nil && !self.status!.isEmpty && self.statusLabel?.superview == nil {
-            self.hudView?.addSubview(self.statusLabel!)
+        if self.status != nil && !self.status!.isEmpty && self.statusLabel.superview == nil {
+            self.hudView.addSubview(self.statusLabel)
         }
         
         switch self.defaultStatusType {
         case .Success, .Error, .Info, .Custom:
-            if self.imageView?.superview == nil && self.statusImage() != nil {
-                self.hudView?.addSubview(self.imageView!)
+            if self.imageView.superview == nil && self.statusImage != nil {
+                self.hudView.addSubview(self.imageView)
             }
             break
-        case .Indefinite:
-            if self.indefinteView?.superview == nil {
-                self.hudView?.addSubview(self.indefinteView!)
+        case .Indicator:
+            if self.indicatorView?.superview == nil {
+                self.hudView.addSubview(self.indicatorView!)
             }
             break
         default: break
@@ -276,38 +383,35 @@ public class ZProgressHUD: UIView {
         self.placeSubviews()
     }
     
-    /*
-     set the view's frame
-     */
+    // TODO: - 完善视图位置计算
+    // set the view's frame
     private func placeSubviews() {
         var rect = CGRectZero
-        var minSize = self.minmumSize
+        let minSize = self.defaultStatusType == .PureStatus ? self.pureLabelminmumSize : self.minmumSize
         var labelSize = CGSizeZero
         let margin: CGFloat = 14.0
-        
-        var pureLabel:  Bool = false
-        if self.imageView?.superview == nil &&
-            self.indefinteView?.superview == nil {
-            pureLabel = true
-            minSize = self.pureLabelminmumSize
-        }
-        
-        // 计算文本大小
+
+        // calculate the stautus frame.size
         if let status = self.status {
             let style = NSMutableParagraphStyle()
             style.lineBreakMode = NSLineBreakMode.ByCharWrapping
-            let attributes = [NSFontAttributeName: self.font,
-                              NSParagraphStyleAttributeName: style.copy()]
+            let attributes = [NSFontAttributeName: self.font, NSParagraphStyleAttributeName: style]
             let option: NSStringDrawingOptions = [.UsesLineFragmentOrigin,
                                                   .UsesFontLeading,
                                                   .TruncatesLastVisibleLine]
-            labelSize = (status as NSString).boundingRectWithSize(self.maxmumLabelSize,
-                                                                 options: option,
-                                                                 attributes: attributes,
-                                                                 context: nil).size
+            labelSize = (status as NSString).boundingRectWithSize(self.maxmumLabelSize, options: option,attributes: attributes, context: nil).size
             let sizeWidth = labelSize.width + margin * 2
-            // 图片最大高度为28.0
-            let sizeHeight = max(self.minmumLabelHeight, labelSize.height) + margin * 2.75 + 28.0
+            
+            // the max indicator view size is 30 * 30
+            // the max image view size is 28 * 28
+            var sizeHeight: CGFloat = 0.0
+            if self.defaultStatusType == .PureStatus {
+                sizeHeight = max(self.minmumLabelHeight, labelSize.height) + 12.0
+            } else if self.defaultStatusType == .Indicator {
+                sizeHeight = max(self.minmumLabelHeight, labelSize.height) + margin * 2.75 + 37.0
+            } else {
+                sizeHeight = max(self.minmumLabelHeight, labelSize.height) + margin * 2.75 + 28.0
+            }
             rect.size.width = max(minSize.width, sizeWidth)
             rect.size.height = max(minSize.height, sizeHeight)
         } else {
@@ -317,17 +421,22 @@ public class ZProgressHUD: UIView {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         
-        self.hudView?.bounds = rect
-        self.hudView?.center = self.center
+        self.hudView.bounds = rect
         
-        let labelOriginY = pureLabel ?
+        if self.defaultPositionType == .Center {
+            self.hudView.center = CGPointMake(CGRectGetWidth(self.frame) / 2.0 + self.centerOffset.horizontal, CGRectGetHeight(self.frame) / 2.0 + self.centerOffset.vertical - self.visibleKeyboardHeight / 2.0)
+        } else {
+            // tabbar view's height is 49.0
+            self.hudView.center = CGPointMake(CGRectGetWidth(self.frame) / 2.0 + self.centerOffset.horizontal, CGRectGetHeight(self.frame) - CGRectGetHeight(self.hudView.frame) - 49.0 - margin + self.centerOffset.vertical - self.visibleKeyboardHeight / 2.0)
+        }
+        
+        let labelOriginY = self.defaultStatusType == .PureStatus ?
             rect.height / 2.0 - labelSize.height / 2.0 :
             rect.height - margin - labelSize.height
         
-        self.statusLabel?.frame = CGRectMake(rect.width / 2.0 - labelSize.width / 2.0,
-                                             labelOriginY,
-                                             labelSize.width, labelSize.height)
-        // 计算状态视图位置
+        self.statusLabel.frame = CGRectMake(rect.width / 2.0 - labelSize.width / 2.0,
+                                            labelOriginY,
+                                            labelSize.width, labelSize.height)
         var centerY: CGFloat = 0.0
         if self.status == nil || self.status!.isEmpty {
             centerY = rect.height / 2.0
@@ -337,68 +446,47 @@ public class ZProgressHUD: UIView {
             centerY = (rect.height - margin * 2.0 - labelSize.height) / 2.0 + margin
         }
         let center = CGPointMake(rect.width / 2.0, centerY)
-        self.indefinteView?.center = center
-        self.imageView?.center = center
+        self.indicatorView?.center = center
+        self.imageView.center = center
         
         CATransaction.commit()
     }
     
     private func removeSubviews() {
         
-        self.imageView?.removeFromSuperview()
-        self.statusLabel?.removeFromSuperview()
-        self.indefinteView?.removeFromSuperview()
-        self.hudView?.removeFromSuperview()
+        self.imageView.removeFromSuperview()
+        self.statusLabel.removeFromSuperview()
+        self.indicatorView?.removeFromSuperview()
+        self.hudView.removeFromSuperview()
         self.removeFromSuperview()
-        self.overlayView?.removeFromSuperview()
+        self.overlayView.removeFromSuperview()
     }
-    
-    internal func overlayViewDidReceiveTouchEvent(sender: AnyObject?, event: UIEvent) {
-    
-    }
-    
-    private func isVisible() -> Bool {
-        return self.alpha > 0
-    }
-    
-    func rotate(sender: NSNotification?) {
-        
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        
-        self.frame = UIScreen.mainScreen().bounds
-        self.bgLayer?.frame = self.frame
-        self.overlayView?.frame = self.frame
-        self.hudView?.center = self.center
-        
-        CATransaction.commit()
-    }
-    
-    private func show() {
-        self.show(nil)
-    }
-    
-    private func show(status: String?) {
-        self.status = status
-        self.defaultStatusType = .Indefinite
+}
+
+// MARK: - internal show methods
+internal extension ZProgressHUD {
+
+    private func show(status: String? = nil) {
+        self.setHUDStatus(status, false)
+        self.defaultStatusType = .Indicator
         dispatch_async(dispatch_get_main_queue()) {
             self.addSubviews()
             UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
                 self.alpha = 1.0
-                self.overlayView?.alpha = 1.0
+                self.overlayView.alpha = 1.0
             })
         }
     }
     
-    private func showImage(image: UIImage?, status: String? = nil, statusType: ZProgressHUDStatusType = .Custom) {
-        self.status = status
+    private func showStatus(image: UIImage? = nil, status: String? = nil, statusType: ZProgressHUDStatusType = .Custom) {
+        self.setHUDStatus(status, false)
         self.defaultStatusType = statusType
         self.customImage = image
-        dispatch_async(dispatch_get_main_queue()) { 
+        dispatch_async(dispatch_get_main_queue()) {
             self.addSubviews()
             UIView.animateWithDuration(self.fadeInAnimationDuration, animations: {
                 self.alpha = 1.0
-                self.overlayView?.alpha = 1.0
+                self.overlayView.alpha = 1.0
                 }, completion: { (flag) in
                     self.setFadeOutTimter(self.minimumDismissDuration)
             })
@@ -413,7 +501,7 @@ public class ZProgressHUD: UIView {
         dispatch_async(dispatch_get_main_queue()) {
             UIView.animateWithDuration(self.fadeOutAnimationDuration, animations: {
                 self.alpha = 0.0
-                self.overlayView?.alpha = 0.0
+                self.overlayView.alpha = 0.0
                 }, completion: { (flag) in
                     self.fadeOutTimer?.invalidate()
                     self.fadeOutTimer = nil
@@ -421,7 +509,11 @@ public class ZProgressHUD: UIView {
             })
         }
     }
-    
+
+    private func isVisible() -> Bool {
+        return self.alpha > 0
+    }
+
     private func setFadeOutTimter (timeInterval: NSTimeInterval) {
         if self.fadeOutTimer != nil {
             self.fadeOutTimer?.invalidate()
@@ -435,16 +527,16 @@ public class ZProgressHUD: UIView {
         NSRunLoop.mainRunLoop().addTimer(self.fadeOutTimer!, forMode:NSRunLoopCommonModes)
     }
     
-    @objc private func fadeOut(timer: NSTimer) {
+    func fadeOut(timer: NSTimer) {
         self.dismiss()
     }
 }
 
-// MAKR:- Utils
+// MARK:- private utils
 private extension ZProgressHUD {
     
-    private func backgroundColor() -> UIColor? {
-        var backgroundColor: UIColor?
+    private func backgroundColor() -> UIColor {
+        var backgroundColor: UIColor = UIColor.blackColor()
         switch self.defaultStyle {
         case .Ligtht:
             backgroundColor = UIColor(white: 1.0, alpha: 1.0)
@@ -453,14 +545,14 @@ private extension ZProgressHUD {
             backgroundColor = UIColor(white: 0.0, alpha: 0.8)
             break
         case .Custom:
-            backgroundColor = self.bgColor
+            backgroundColor = self.bgColor ?? UIColor.blackColor()
             break
         }
         return backgroundColor
     }
     
-    private func foregroundColor() -> UIColor? {
-        var foregroundColor: UIColor?
+    private func foregroundColor() -> UIColor {
+        var foregroundColor: UIColor = UIColor.whiteColor()
         switch self.defaultStyle {
         case .Ligtht:
             foregroundColor = UIColor.blackColor()
@@ -469,14 +561,14 @@ private extension ZProgressHUD {
             foregroundColor = UIColor.whiteColor()
             break
         case .Custom:
-            foregroundColor = self.fgColor
+            foregroundColor = self.fgColor ?? UIColor.whiteColor()
             break
         }
         return foregroundColor
     }
     
-    func statusImage() -> UIImage? {
-        var statusImage: UIImage?
+    var statusImage: UIImage? {
+        var statusImage: UIImage? = nil
         switch self.defaultStatusType {
         case .Success:
             statusImage = self.successImage
@@ -495,9 +587,49 @@ private extension ZProgressHUD {
         }
         return statusImage
     }
+    
+    func setHUDStatus(status: String?, _ placeSubviews: Bool) {
+        self.status = status
+        if placeSubviews {
+            self.placeSubviews()
+        }
+    }
+    
+    var visibleKeyboardHeight: CGFloat {
+        var keyboardWindow: UIWindow? = nil
+        
+        if let targetClass = NSClassFromString("UITextEffectsWindow") {
+            for window in UIApplication.sharedApplication().windows {
+                
+                if window.isKindOfClass(targetClass) {
+                    keyboardWindow = window
+                    break
+                }
+            }
+        }
+        
+        var inputSetHostView: UIView? = nil
+        if let window = keyboardWindow {
+            for possibleKeyboard in window.subviews {
+                if possibleKeyboard.isKindOfClass(NSClassFromString("UIInputSetHostView")!) {
+                    inputSetHostView = possibleKeyboard
+                }
+            }
+        }
+        
+        if let inputSetHostView = inputSetHostView {
+            for possibleKeyboard in inputSetHostView.subviews {
+                if possibleKeyboard.isKindOfClass(NSClassFromString("UIInputSetHostView")!) {
+                    return CGRectGetHeight(possibleKeyboard.frame)
+                }
+            }
+        }
+        
+        return 0
+    }
 }
 
-// MARK:- Setters
+// MARK:- public Setters
 public extension ZProgressHUD {
 
     public class func setMinmumSize(size: CGSize) {
@@ -537,7 +669,7 @@ public extension ZProgressHUD {
     }
     
     public class func setStatus(status: String?) {
-        self.shareInstance().status = status
+        self.shareInstance().setHUDStatus(status, true)
     }
     
     public class func setCenterOffset(offset: UIOffset) {
@@ -552,8 +684,16 @@ public extension ZProgressHUD {
         self.shareInstance().defaultStyle = style
     }
     
+    public class func setDefaultProgressType(progressType: ZProgressHUDProgressType) {
+        self.shareInstance().defaultPorgressType = progressType
+    }
+    
     public class func setDefaultMaskType(maskType: ZProgressHUDMaskType) {
         self.shareInstance().defaultMaskType = maskType
+    }
+    
+    public class func setDefaultPositionType(positionType: ZProgressHUDPositionType) {
+        self.shareInstance().defaultPositionType = positionType
     }
     
     public class func setMinimumDismissDuration(duration: NSTimeInterval) {
@@ -569,31 +709,31 @@ public extension ZProgressHUD {
     }
 }
 
-// MARK: - show methods
+// MARK: - public show methods
 public extension ZProgressHUD {
     
-    public class func show() {
-        self.shareInstance().show(nil)
-    }
-    
-    public class func show(status: String?) {
+    public class func show(status: String? = nil) {
         self.shareInstance().show(status)
     }
     
-    public class func showImage(image: UIImage?, status: String? = nil) {
-        self.shareInstance().showImage(image, status: status, statusType: .Custom)
+    public class func showImage(image: UIImage? = nil, status: String? = nil) {
+        self.shareInstance().showStatus(image, status: status, statusType: .Custom)
     }
     
-    public class func showError(status: String) {
-        self.shareInstance().showImage(nil, status: status, statusType: .Error)
+    public class func showError(status: String? = nil) {
+        self.shareInstance().showStatus(nil, status: status, statusType: .Error)
     }
     
-    public class func showInfo(status: String) {
-        self.shareInstance().showImage(nil, status: status, statusType: .Info)
+    public class func showInfo(status: String? = nil) {
+        self.shareInstance().showStatus(nil, status: status, statusType: .Info)
     }
     
-    public class func showSuccess(status: String) {
-        self.shareInstance().showImage(nil, status: status, statusType: .Success)
+    public class func showSuccess(status: String? = nil) {
+        self.shareInstance().showStatus(nil, status: status, statusType: .Success)
+    }
+    
+    public class func showStatus(status: String) {
+        self.shareInstance().showStatus(status: status, statusType: .PureStatus)
     }
     
     public class func dismiss(delay: NSTimeInterval = 0.0) {
@@ -605,12 +745,13 @@ public extension ZProgressHUD {
     }
 }
 
-// MARK: - UIImage Tint Color
+// MARK: - internal UIImage Utils
 internal extension UIImage {
+    
     /**
-     为图片指定颜色
+     apply colours to a image
      
-     - parameter color: 图片颜色
+     - parameter color: a color
      
      - returns: UIImage
      */
@@ -627,6 +768,20 @@ internal extension UIImage {
         CGContextFillRect(context, rect)
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
+        return image
+    }
+    
+    /**
+     get the image from this framework
+     
+     - parameter frameworknamed: 图片名称
+     
+     - returns: UIImage
+     */
+    class func resourceNamed(frameworknamed: String) -> UIImage? {
+        let manualSoure = "ZProgressHUD.bundle".stringByAppendingFormat("%@", frameworknamed)
+        let frameworkSoure = NSBundle(forClass: ZProgressHUD.classForCoder()).bundlePath.stringByAppendingFormat("/ZProgressHUD.bundle/%@", frameworknamed)
+        let image = UIImage(named: manualSoure) == nil ? UIImage(named: frameworkSoure) : UIImage(named: manualSoure)
         return image
     }
 }
