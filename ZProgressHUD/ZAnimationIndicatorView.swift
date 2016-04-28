@@ -8,7 +8,7 @@
 
 import UIKit
 
-internal class ZAnimationIndicatorView: UIView {
+class ZAnimationIndicatorView: UIView {
     
     private lazy var activityIndicatorLayer: CAShapeLayer = {
         
