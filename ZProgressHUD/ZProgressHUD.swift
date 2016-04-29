@@ -630,6 +630,10 @@ private extension ZProgressHUD {
 // MARK:- public Setters
 public extension ZProgressHUD {
 
+    public class func setLineWidth(width: CGFloat) {
+        self.shareInstance().lineWidth = width
+    }
+    
     public class func setMinmumSize(size: CGSize) {
         self.shareInstance().minmumSize = size
     }

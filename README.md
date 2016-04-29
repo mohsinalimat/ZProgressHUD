@@ -38,6 +38,7 @@ public class func isVisible() -> Bool
 ```
 #### provide  class function to set HUD
 ``` bash
+public class func setLineWidth(width: CGFloat)
 public class func setMinmumSize(size: CGSize)
 public class func setCornerRadius(radius: CGFloat)
 public class func setFont(font: UIFont)
