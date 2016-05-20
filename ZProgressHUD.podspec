@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     ZProgressHUD is a simple use swift HUD.
     It is simple use like ZProgressHUD.show()
                    DESC
-
+  s.module_name = "ZProgressHUD"
   s.homepage     = "https://github.com/zevwings/ZProgressHUD"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.author       = { "zevwings" => "zev.wings@gmail.com" }
