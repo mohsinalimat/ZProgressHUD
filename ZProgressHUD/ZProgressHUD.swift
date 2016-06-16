@@ -46,7 +46,7 @@ public enum ZProgressHUDStatusType {
     case progress // development
 }
 
-public extension NSNotification.Name {
+public extension Notification.Name {
     
     public static let ZProgressHUDDidRecieveTouchEvent = NSNotification.Name(rawValue: "com.zevwings.events.touchevent")
 }
@@ -200,23 +200,25 @@ public class ZProgressHUD: UIView {
         
         NotificationCenter.default().addObserver(self,
                                                  selector: #selector(ZProgressHUD.positionHUD(_:)),
-                                                 name:NSNotification.Name.UIApplicationDidChangeStatusBarOrientation,
+                                                 name: .UIApplicationDidChangeStatusBarOrientation,
                                                  object: nil)
-        
-            NotificationCenter.default().addObserver(self,
-                                                         selector: #selector(ZProgressHUD.positionHUD(_:)),
-                                                         name: NSNotification.Name.UIKeyboardWillHide,
-                                                         object: nil)
         
         NotificationCenter.default().addObserver(self,
                                                  selector: #selector(ZProgressHUD.positionHUD(_:)),
-                                                 name: NSNotification.Name.UIKeyboardWillShow,
+                                                 name: .UIKeyboardWillHide,
+                                                 object: nil)
+        
+        NotificationCenter.default().addObserver(self,
+                                                 selector: #selector(ZProgressHUD.positionHUD(_:)),
+                                                 name: .UIKeyboardWillShow,
                                                  object: nil)
         self.isUserInteractionEnabled = false
         
         self.errorImage = UIImage.resource(named: "error.png")
         self.successImage = UIImage.resource(named: "success")
         self.infoImage = UIImage.resource(named: "info")
+        
+        self.positionHUD(nil)
     }
     
     required public init?(coder aDecoder: NSCoder) {
@@ -229,7 +231,7 @@ public class ZProgressHUD: UIView {
     
     // MARK: - Events
     // recieve notification and position the subviews
-    internal func positionHUD(_ notification: NSNotification?) {
+    internal func positionHUD(_ notification: Notification?) {
         var visibleKeyboardHeight = self.visibleKeyboardHeight;
         if notification?.name == NSNotification.Name.UIKeyboardWillHide {
             visibleKeyboardHeight = 0.0
@@ -257,8 +259,6 @@ public class ZProgressHUD: UIView {
 extension ZProgressHUD {
     // set the views' properties
     private func prepare() {
-        
-        print(self)
         
         if !self.isVisible() {
             self.alpha = 0
