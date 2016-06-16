@@ -105,11 +105,13 @@
 		BAC6D2E81CBBD43000120E14 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = ZhangZZZZ;
 				TargetAttributes = {
 					BAC6D2F01CBBD43000120E14 = {
 						CreatedOnToolsVersion = 7.3;
+						DevelopmentTeam = ZJHBGBWAT8;
+						DevelopmentTeamName = "伟 张 (Personal Team)";
 					};
 				};
 			};
@@ -281,6 +283,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zevwings.progresshud;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};

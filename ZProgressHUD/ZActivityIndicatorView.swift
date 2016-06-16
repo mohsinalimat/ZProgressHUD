@@ -12,13 +12,13 @@ class ZActivityIndicatorView: UIView {
     
     private var isAnimating: Bool = false
     var autoAnimating: Bool = false
-    var duration: NSTimeInterval = 1.5
+    var duration: TimeInterval = 1.5
     var timingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
     
     private lazy var activityIndicatorLayer: CAShapeLayer = {
         let activityIndicatorLayer = CAShapeLayer()
         activityIndicatorLayer.fillColor = nil
-        activityIndicatorLayer.strokeColor = self.strokeColor.CGColor
+        activityIndicatorLayer.strokeColor = self.strokeColor.cgColor
         return activityIndicatorLayer
     }()
     
@@ -29,33 +29,33 @@ class ZActivityIndicatorView: UIView {
         }
     }
     
-    var strokeColor: UIColor = UIColor.whiteColor() {
+    var strokeColor: UIColor = UIColor.white() {
         didSet {
-            self.activityIndicatorLayer.strokeColor = self.strokeColor.CGColor
+            self.activityIndicatorLayer.strokeColor = self.strokeColor.cgColor
         }
     }
     
     var hidesWhenStopped: Bool = false {
         didSet {
-            self.hidden = !self.isAnimating && self.hidesWhenStopped
+            self.isHidden = !self.isAnimating && self.hidesWhenStopped
         }
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ZActivityIndicatorView.resetAnimating), name: UIApplicationDidBecomeActiveNotification, object: nil)
+        NotificationCenter.default().addObserver(self, selector: #selector(ZActivityIndicatorView.resetAnimating), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(UIApplicationDidBecomeActiveNotification)
+        NotificationCenter.default().removeObserver(NSNotification.Name.UIApplicationDidBecomeActive)
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
 
-    override func willMoveToSuperview(newSuperview: UIView?) {
-        super.willMoveToSuperview(newSuperview)
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove(toSuperview: newSuperview)
         if newSuperview == nil {
             self.stopAnimating()
             self.activityIndicatorLayer.removeFromSuperlayer()
@@ -67,19 +67,19 @@ class ZActivityIndicatorView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.activityIndicatorLayer.frame = CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))
+        self.activityIndicatorLayer.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
         self.prepare()
     }
     
     func prepare() {
         
-        let center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds))
-        let radius = min(CGRectGetWidth(self.bounds) / 2, CGRectGetHeight(self.bounds) / 2) -
+        let center = CGPoint(x: self.bounds.midX, y: self.bounds.midY)
+        let radius = min(self.bounds.width / 2, self.bounds.height / 2) -
             self.activityIndicatorLayer.lineWidth / 2
         let startAngle: CGFloat = 0.0
         let endAngle = CGFloat(2 * M_PI)
         let path = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-        self.activityIndicatorLayer.path = path.CGPath
+        self.activityIndicatorLayer.path = path.cgPath
         self.activityIndicatorLayer.strokeStart = 0.0
         self.activityIndicatorLayer.strokeEnd = 0.0
         
@@ -98,8 +98,8 @@ class ZActivityIndicatorView: UIView {
         animation.fromValue = 0
         animation.toValue = CGFloat(2 * M_PI)
         animation.repeatCount = Float.infinity
-        animation.removedOnCompletion = false
-        self.activityIndicatorLayer.addAnimation(animation, forKey: "com.zevwings.animation.rotate")
+        animation.isRemovedOnCompletion = false
+        self.activityIndicatorLayer.add(animation, forKey: "com.zevwings.animation.rotate")
         
         let headAnimation = CABasicAnimation()
         headAnimation.keyPath = "strokeStart"
@@ -136,25 +136,25 @@ class ZActivityIndicatorView: UIView {
         animations.duration = self.duration
         animations.animations = [headAnimation, tailAnimation, endHeadAnimation, endTailAnimation]
         animations.repeatCount = Float.infinity
-        animations.removedOnCompletion = false
-        self.activityIndicatorLayer.addAnimation(animations, forKey: "com.zevwings.animation.stroke")
+        animations.isRemovedOnCompletion = false
+        self.activityIndicatorLayer.add(animations, forKey: "com.zevwings.animation.stroke")
         
         self.isAnimating = true
  
         if self.hidesWhenStopped {
-            self.hidden = false
+            self.isHidden = false
         }
     }
     
     func stopAnimating() {
         if !self.isAnimating { return }
         
-        self.activityIndicatorLayer.removeAnimationForKey("com.zevwings.animation.rotate")
-        self.activityIndicatorLayer.removeAnimationForKey("com.zevwings.animation.stroke")
+        self.activityIndicatorLayer.removeAnimation(forKey: "com.zevwings.animation.rotate")
+        self.activityIndicatorLayer.removeAnimation(forKey: "com.zevwings.animation.stroke")
         self.isAnimating = false;
         
         if self.hidesWhenStopped {
-            self.hidden = true
+            self.isHidden = true
         }
     }
     

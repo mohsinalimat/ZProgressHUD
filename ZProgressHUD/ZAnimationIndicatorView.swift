@@ -14,8 +14,8 @@ class ZAnimationIndicatorView: UIView {
         
         let activityIndicatorLayer = CAShapeLayer()
         activityIndicatorLayer.fillColor = nil
-        activityIndicatorLayer.strokeColor = self.strokeColor.CGColor
-        activityIndicatorLayer.contentsScale = UIScreen.mainScreen().scale
+        activityIndicatorLayer.strokeColor = self.strokeColor.cgColor
+        activityIndicatorLayer.contentsScale = UIScreen.main().scale
         activityIndicatorLayer.lineCap = kCALineCapRound
         activityIndicatorLayer.lineJoin = kCALineJoinBevel
         activityIndicatorLayer.lineWidth = self.lineWidth
@@ -26,8 +26,8 @@ class ZAnimationIndicatorView: UIView {
     private lazy var maskLayer: CALayer = {
 
         let maskLayer = CALayer()
-        let contentImage = UIImage.resourceNamed("angle-mask")
-        maskLayer.contents = contentImage?.CGImage
+        let contentImage = UIImage.resource(named: "angle-mask")
+        maskLayer.contents = contentImage?.cgImage
         return maskLayer
     }()
     
@@ -38,9 +38,9 @@ class ZAnimationIndicatorView: UIView {
         }
     }
     
-    var strokeColor: UIColor = UIColor.whiteColor() {
+    var strokeColor: UIColor = UIColor.white() {
         didSet {
-            self.activityIndicatorLayer.strokeColor = self.strokeColor.CGColor
+            self.activityIndicatorLayer.strokeColor = self.strokeColor.cgColor
         }
     }
     
@@ -55,7 +55,7 @@ class ZAnimationIndicatorView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.resetAnimating), name: UIApplicationDidBecomeActiveNotification, object: nil)
+        NotificationCenter.default().addObserver(self, selector: #selector(self.resetAnimating), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -63,11 +63,11 @@ class ZAnimationIndicatorView: UIView {
     }
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(UIApplicationDidBecomeActiveNotification)
+        NotificationCenter.default().removeObserver(NSNotification.Name.UIApplicationDidBecomeActive)
     }
     
-    override func willMoveToSuperview(newSuperview: UIView?) {
-        super.willMoveToSuperview(newSuperview)
+    override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove(toSuperview: newSuperview)
         if newSuperview == nil {
             self.stopAnimating()
             self.activityIndicatorLayer.removeFromSuperlayer()
@@ -79,19 +79,19 @@ class ZAnimationIndicatorView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.activityIndicatorLayer.frame = CGRectMake(0, 0, CGRectGetWidth(self.frame), CGRectGetHeight(self.frame))
+        self.activityIndicatorLayer.frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
         self.maskLayer.frame = self.activityIndicatorLayer.frame
     }
     
     private func prepare() {
         
-        let center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds))
-        let radius = min(CGRectGetWidth(self.bounds) / 2, CGRectGetHeight(self.bounds) / 2) -
+        let center = CGPoint(x: self.bounds.midX, y: self.bounds.midY)
+        let radius = min(self.bounds.width / 2, self.bounds.height / 2) -
             self.activityIndicatorLayer.lineWidth / 2
         let startAngle = CGFloat(M_PI * 3 / 2)
         let endAngle = CGFloat(M_PI / 2 + M_PI * 5)
         let path = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-        self.activityIndicatorLayer.path = path.CGPath
+        self.activityIndicatorLayer.path = path.cgPath
         if self.autoAnimating {
             self.startAnimating()
         }
@@ -103,9 +103,9 @@ class ZAnimationIndicatorView: UIView {
             return
         }
         
-        self.hidden = false
+        self.isHidden = false
         
-        let animationDuration: NSTimeInterval = 1.0
+        let animationDuration: TimeInterval = 1.0
         let timingFunction: CAMediaTimingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
         
         let animation = CABasicAnimation(keyPath: "transform.rotation")
@@ -113,11 +113,11 @@ class ZAnimationIndicatorView: UIView {
         animation.toValue = M_PI * 2
         animation.duration = animationDuration
         animation.timingFunction = timingFunction
-        animation.removedOnCompletion = false
+        animation.isRemovedOnCompletion = false
         animation.repeatCount = Float.infinity
         animation.fillMode = kCAFillModeForwards
         animation.autoreverses = false
-        self.maskLayer.addAnimation(animation, forKey: "com.zevwings.animation.rotate")
+        self.maskLayer.add(animation, forKey: "com.zevwings.animation.rotate")
         
         let strokeStartAnimation = CABasicAnimation(keyPath: "strokeStart")
         strokeStartAnimation.fromValue = 0.015
@@ -130,10 +130,10 @@ class ZAnimationIndicatorView: UIView {
         let animationGroup = CAAnimationGroup()
         animationGroup.duration = animationDuration
         animationGroup.repeatCount = Float.infinity
-        animationGroup.removedOnCompletion = false
+        animationGroup.isRemovedOnCompletion = false
         animationGroup.timingFunction = timingFunction
         animationGroup.animations = [strokeStartAnimation, strokeEndAnimation]
-        self.activityIndicatorLayer.addAnimation(animationGroup, forKey: "com.zevwings.animation.progress")
+        self.activityIndicatorLayer.add(animationGroup, forKey: "com.zevwings.animation.progress")
         
         self.isAnimating = true
     }
@@ -144,7 +144,7 @@ class ZAnimationIndicatorView: UIView {
         }
         self.maskLayer.removeAllAnimations()
         self.activityIndicatorLayer.removeAllAnimations()
-        self.hidden = true
+        self.isHidden = true
         self.isAnimating = false
     }
     
